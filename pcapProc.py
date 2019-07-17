@@ -18,6 +18,7 @@ class PACKET:
         self.destination = destination
         self.protocol = protocol
         self.length = length
+        self.count=0
 
 class PCAP:
     def __init__(self):
@@ -61,25 +62,33 @@ class PCAP:
 
     def sourceByPackets(self):
         '''Returns a list of tuples (source,numPackets)'''
-        newList = []
+        someList = []
         returnList=[]
         for i in range(len(self.container)-1):
-            newList.append((int(self.container[i].length),self.container[i].source))
-        someList = self.mergeSort(newList)
+            if self.container[i].source in self.dict:
+                self.dict[self.container[i].source]+=1
+            else:
+                self.dict[self.container[i].source]=1
+        for item in self.dict:
+            someList.append((self.dict[item],item))
+        someList=self.mergeSort(someList)
         for item in someList:
             returnList.append((item[1],item[0]))
         return returnList
 
     def sourceByBytes(self):
         '''Returns a list of tuples (source,totalBytes)'''
-        someList=[]
+        newList = []
         returnList=[]
-        list = self.sourceByPackets()
+        someList=[]
+        for i in range(len(self.container)-1):
+            newList.append((int(self.container[i].length),self.container[i].source))
+        list = self.mergeSort(newList)
         for item in list:
-            if item[0] in self.dict:
-                self.dict[item[0]]+=item[1]
+            if item[1] in self.dict:
+                self.dict[item[1]]+=item[0]
             else:
-                self.dict[item[0]]=item[1]
+                self.dict[item[1]]=item[0]
         for item in self.dict:
             someList.append((self.dict[item],item))
         someList=self.mergeSort(someList)
@@ -89,41 +98,79 @@ class PCAP:
 
     def protocolByPackets(self):
         '''Returns a list of tuples (protocol,numPackets)'''
-        newList = []
+        someList = []
         returnList=[]
         for i in range(len(self.container)-1):
+            if self.container[i].protocol in self.dict:
+                self.dict[self.container[i].protocol]+=1
+            else:
+                self.dict[self.container[i].protocol]=1
+        for item in self.dict:
+            someList.append((self.dict[item],item))
+
+        someList = self.mergeSort(someList)
+        for item in someList:
+            returnList.append((item[1],item[0]))
+        return returnList
+
+    def protocolByBytes(self):
+        '''Returns a list of tuples (protocol,totalBytes)'''
+        newList = []
+        returnList=[]
+        someList=[]
+        for i in range(len(self.container)-1):
             newList.append((int(self.container[i].length),self.container[i].protocol))
-        someList = self.mergeSort(newList)
+        list = self.mergeSort(newList)
+        for item in list:
+            if item[1] in self.dict:
+                self.dict[item[1]]+=item[0]
+            else:
+                self.dict[item[1]]=item[0]
+        for item in self.dict:
+            someList.append((self.dict[item],item))
+        someList=self.mergeSort(someList)
         for item in someList:
             returnList.append((item[1],item[0]))
         return returnList
 
     def connectionByPackets(self):
         '''Returns a list of tuples (source,destination,numPackets)'''
-        newList = []
+        someList = []
         returnList=[]
         for i in range(len(self.container)-1):
-            newList.append((int(self.container[i].length),self.container[i].source, self.container[i].destination))
-        someList = self.mergeSort(newList)
-        for item in someList:
+            if (str(self.container[i].source)+"{}"+str(self.container[i].destination)) in self.dict:
+                self.dict[(str(self.container[i].source)+"{}"+str(self.container[i].destination))]+=1
+            else:
+                self.dict[(str(self.container[i].source)+"{}"+str(self.container[i].destination))]=1
+        newList=[]
+        for item in self.dict:
+            splitSrcDest = item.split("{}")
+            newList.append((self.dict[item],splitSrcDest[0],splitSrcDest[1]))
+        newList= self.mergeSort(newList)
+        for item in newList:
             returnList.append((item[1],item[2],item[0]))
         return returnList
 
     def connectionByBytes(self):
         '''Returns a list of tuples (source,destination,totalBytes)'''
+        newList = []
         returnList=[]
         someList=[]
-        list = self.connectionByPackets()
-        for item in list:
-            if str(item[0])+"{}"+str(item[1]) in self.dict:
-                self.dict[str(item[0])+"{}"+str(item[1])]+=item[2]
+        list=[]
+        for i in range(len(self.container)-1):
+            newList.append((int(self.container[i].length),self.container[i].source, self.container[i].destination))
+        someList = self.mergeSort(newList)
+        for item in someList:
+            if str(item[1])+"{}"+str(item[2]) in self.dict:
+                self.dict[str(item[1])+"{}"+str(item[2])]+=item[0]
             else:
-                self.dict[str(item[0])+"{}"+str(item[1])]=item[2]
+                self.dict[str(item[1])+"{}"+str(item[2])]=item[0]
+        newList=[]
         for item in self.dict:
             splitSrcDest = item.split("{}")
-            someList.append((self.dict[item],splitSrcDest[0],splitSrcDest[1]))
-        someList= self.mergeSort(someList)
-        for item in someList:
+            newList.append((self.dict[item],splitSrcDest[0],splitSrcDest[1]))
+        newList= self.mergeSort(newList)
+        for item in newList:
             returnList.append((item[1],item[2],item[0]))
         return returnList
 
@@ -131,11 +178,12 @@ class PCAP:
 def main():
     PCtest = PCAP()
     PCtest.appendCSV('pcap.csv')
-    # print(PCtest.sourceByPackets())
-    # print(PCtest.sourceByBytes())
-    # print(PCtest.protocolByPackets())
-    # print(PCtest.connectionByPackets())
-    # print(PCtest.connectionByBytes())
+    # print(PCtest.sourceByPackets()) #this works
+    # print(PCtest.sourceByBytes()) #this works
+    # print(PCtest.protocolByPackets()) #this works
+    # print(PCtest.protocolByBytes()) #this works
+    # print(PCtest.connectionByPackets()) #works
+    print(PCtest.connectionByBytes()) #this works
 main()
 
 
