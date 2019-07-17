@@ -1,4 +1,13 @@
 #!/usr/bin/python3
+'''
+      Author: Genadi Shamugia
+       Alpha: 216126
+        Date: July 16, 2019
+Program Name: Sorting
+Program Description:
+    Program takes a pcap file and sorts it many different ways using object
+    oriented programming in python3
+'''
 
 class PACKET:
     def __init__(self,order,time,source,destination,protocol,length):
@@ -126,7 +135,7 @@ def main():
     # print(PCtest.sourceByBytes())
     # print(PCtest.protocolByPackets())
     # print(PCtest.connectionByPackets())
-    print(PCtest.connectionByBytes())
-
+    # print(PCtest.connectionByBytes())
 main()
+
 
